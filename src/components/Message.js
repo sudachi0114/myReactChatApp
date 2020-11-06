@@ -5,8 +5,8 @@ export default class Message extends React.Component {
         return (
             <div className="Message">
                 <div className="">
-                    <p>@user_name</p>
-                    <p>text</p>
+                    <p className="">@{this.props.message.user_name}</p>
+                    <p className="">{this.props.message.text}</p>
                 </div>
             </div>
         )
@@ -14,6 +14,4 @@ export default class Message extends React.Component {
 }
 
 /* memo:
-<p className="">@{this.props.message.user_name}</p>
-<p className="">{this.props.message.text}</p>
  */
