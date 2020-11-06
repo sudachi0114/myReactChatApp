@@ -1,6 +1,22 @@
 import logo from './logo.svg';
 import './App.css';
 
+import React, { Component } from 'react';
+
+class App extends Component {
+  render() {
+    return (
+      <div>
+        <div className="App-header">
+          <h2>Sudachi React Chat App</h2>
+        </div>
+        <p> hello react app</p>
+      </div>
+    );
+  }
+}
+
+/*
 function App() {
   return (
     <div className="App">
@@ -21,5 +37,6 @@ function App() {
     </div>
   );
 }
+*/
 
 export default App;
