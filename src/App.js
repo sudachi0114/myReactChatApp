@@ -3,6 +3,8 @@ import './App.css';
 
 import React, { Component } from 'react';
 
+import ChatBox from "./components/ChatBox.js"
+
 class App extends Component {
   render() {
     return (
@@ -11,6 +13,7 @@ class App extends Component {
           <h2>Sudachi React Chat App</h2>
         </div>
         <p> hello react app</p>
+        <ChatBox />
       </div>
     );
   }
