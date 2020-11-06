@@ -4,6 +4,7 @@ import './App.css';
 import React, { Component } from 'react';
 
 import ChatBox from "./components/ChatBox.js"
+import Message from "./components/Message.js"
 
 let msgRepo = [ {"user_name": "anonymous", "text": "hogera"} ];
 
@@ -27,6 +28,7 @@ class App extends Component {
         <div className="App-header">
           <h2>Sudachi React Chat App</h2>
         </div>
+        <Message />
         <ChatBox onTextChange={this.onTextChange} onButtonClick={this.onButtonClick} />
       </div>
     );
