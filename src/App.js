@@ -28,8 +28,15 @@ class App extends Component {
         <div className="App-header">
           <h2>Sudachi React Chat App</h2>
         </div>
-        <Message />
+
+        <div className="MessageList" >
+          {msgRepo.map( (m, i) => {
+            return <Message key={i} message={m} />
+          })}
+        </div>
+
         <ChatBox onTextChange={this.onTextChange} onButtonClick={this.onButtonClick} />
+
       </div>
     );
   }
