@@ -248,15 +248,370 @@ firebase deploy
 
 
 ## Application を作っていくぞ
+前置きが長くなりましたが、アプリケーション部分を作っていきましょう。
+
+### フロントページの編集
+React の用語では「Container」というらしいです。
+
+先ほどの React のアイコンがくるくるしていたページを編集します。
+
+編集するには `src/App.js` をいじります。[^2]
+この `App.js` には `App` というものを定義して `export` することで、`src/index.js` から呼び出されてレンダリングされる、という経路のようです。
+
+`App.js` の中で `App` を定義して `render()` を呼び出せるようにします。この戻り値 ( `return()` )として HTML (JSX とかっていうんでしたっけ) を書くことでコンテナにレンダリングされます。
+
+ここで一点注意ですが、`render( return (ここ) ) ` に書く HTML は、全体を `<div> ~ </div>` に囲まれるようにします。
+
+```js:src/App.js
+import logo from './logo.svg';
+import './App.css';
+
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <p> Hello My React Application!! </p>
+      </header>
+    </div>
+  );
+}
+
+export default App;
+
+```
+
+こんな感じで編集します。
+すると、コンテナが以下のような感じになると思います。
+
+![my first react container](pictures/08_my_first_react_container.png)
+
+App ないに `<div>` で囲まれた HTML を書くことで手軽にレンダリングができました。
+
+### Component
+さて、次に Component を使ってみましょう。
+
+(完全初心者なのでユルシテ)「画面の要素を、部品単位に分割したもの」と思えば良いと思います。ぼくはそう考えてます。
+
+#### Define:
+まずは Component を作成しましょう。
+最初に置き場所を作ります。
+
+```
+mkdir src/components
+```
+
+ディレクトリの構成はこんな感じになります。
+今作成した `components/` の下にコンポーネントを js ファイルで書きます。それを `App.js` から呼び出すことで画面に登場！、というストーリーになります。
+
+```
+src/
+├── App.js
+├── ...
+├── components/
+├── ...
+└── setupTests.js
+```
+
+今回は Chat アプリを作りたいので、チャットをするときのユーザ名メッセージと入力する部分を部品として分割して作成します。
+
+```sh
+touch src/components/ChatBox.js
+```
 
 
+```
+src/
+├── App.js
+├── ...
+├── components
+│   └── ChatBox.js
+├── ...
+```
+
+まずは、以下のように、ChatBox を作るのだ、という意思を表明します。
+
+```js:src/components/ChatBox.js
+import React from 'react';
+
+export default class ChatBox extends React.Component {
+  render() {
+    return (
+        <div className="ChatBox">
+          <p>Will Be ChatBox</p>
+        </div>
+    );
+  }
+}
+```
+
+これで部品の宣言は完了です。次はこれを `App.js` から呼び出して、使ってみます。
 
 
+#### Use
+
+```js:src/App.js
+import logo from './logo.svg';
+import './App.css';
+
+import ChatBox from './components/ChatBox.js';
+
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <p> Hello My React Application!! </p>
+      </header>
+
+      <ChatBox />
+    </div>
+  );
+}
+
+export default App;
+```
+
+![use react component](./pictures/09_use_react_component.png)
+
+画面がこんな感じに変わりました。下に ChatBox 部分がきちんと作られていることがわかります。
+
+あとは Component の中身を編集すれば OK です。
+
+さて、ここからは完成にむけて走るだけなのですが、ほとんど参考元と違いがありませんので、ソースコードは一気に貼ってしまいます。
+
+### 出来上がったものがこちらになります:
+
+```js:src/App.js
+import logo from './logo.svg';
+import './App.css';
+
+import { firebaseDB } from './firebase/index.js'
+
+import React, { Component } from 'react';
+
+import ChatBox from "./components/ChatBox.js"
+import Message from "./components/Message.js"
+
+const messageRef = firebaseDB.ref('messages')
+
+class App extends Component {
+  constructor(props) {
+    super(props);
+
+    this.onTextChange = this.onTextChange.bind(this)
+    this.onButtonClick = this.onButtonClick.bind(this)
+
+    this.state = {
+      text: "",
+      user_name: "",
+      messages: [],
+    }
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <div className="App-header">
+          <h2>Sudachi React Chat App</h2>
+        </div>
+
+        <div className="MessageList" >
+          {this.state.messages.map( (m, i) => {
+            return <Message key={i} message={m} />
+          })}
+        </div>
+
+        <ChatBox onTextChange={this.onTextChange} onButtonClick={this.onButtonClick} />
+
+      </div>
+    );
+  }
+
+  // 文字が入力される度に、state の更新を行う method (event 処理) の定義
+  onTextChange(e) {
+    if (e.target.name == 'user_name') {
+      this.setState({
+        "user_name": e.target.value,
+      });
+    } else if (e.target.name == "text") {
+      this.setState({
+        "text": e.target.value,
+      });
+    }
+  }
+
+  // 送信ボタン押下時の event 処理
+  onButtonClick() {
+    // 簡易的バリデーション
+    if (this.state.user_name == '') {
+      alert('user name is empty!')
+      return
+    } else if (this.state.text == '') {
+      alert('text is empty!')
+      return
+    } 
+
+    console.log('message pushed!')
+    messageRef.push({
+      "user_name": this.state.user_name,
+      "text": this.state.text,
+    })
+    console.log(messageRef);
+
+  }
+
+  // DB の更新をキャッチする Listener の実装
+  componentWillMount() {
+    messageRef.on('child_added', (snapshot) => {
+      const m = snapshot.val()
+      let msgs = this.state.messages
+
+      msgs.push({
+        'text': m.text,
+        'user_name': m.user_name,
+      })
+
+      this.setState({
+        message: msgs
+      });
+    })
+  }
+}
+
+export default App;
+
+```
+
+```js:src/components/ChatBox.js
+import React from 'react';
+
+export default class ChatBox extends React.Component {
+    render() {
+        return (
+            <div className="ChatBox">
+                <div className="">
+                    <input name="user_name" className="" onChange={this.props.onTextChange} placeholder="user name" />
+                </div>
+
+                <textarea name="text" className="" onChange={this.props.onTextChange} />
+                <button className="" onClick={this.props.onButtonClick} >送信</button>
+            </div>
+        );
+    }
+}
+```
+
+```js:src/components/Message.js
+import React from 'react';
+
+export default class Message extends React.Component {
+    render() {
+        return (
+            <div className="Message">
+                <div className="">
+                    <p className="">@{this.props.message.user_name}</p>
+                    <p className="">{this.props.message.text}</p>
+                </div>
+            </div>
+        )
+    }
+}
+```
+
+### firebase Realtime Database
+最後に、firebase の Realtime Database との連携の説明をして終わります。
+
+firebase Realtime Database を使うには、少なくとも2つ config を書く必要があります。
+
+1. `config.js` 
+2. `database.rules.json`
+
+#### `config.js` の取得:
+firebase のコンソールから設定に必要な情報を取得します。
+これは、歯車マークを押して、「プロジェクトを設定」から下の方にスクロールすると出てくると思います。
+
+「マイアプリ」の「Firebase SDK snippet」を参照します。
+
+![firebase_sdk_snippent](./pictures/06_firebase_config_json.png)
+
+置き場所ですが、`src/firebase` 下に置いておきましょう。
+
+```
+src
+├── App.js
+├── ...
+├── components/
+|   ├── ChatBox.js
+|   └── Message.js
+├── firebase/
+|   ├── config.js
+|   └── index.js
+├── ...
+```
+
+だいたいこんな感じです。そして先ほど取得した情報を `src/firebase/config.js` の中に貼り付けます。
 
 
+```js:src/firebase/config.js
+export const firebaseConfig = {
+  apiKey: "HogeFugahogeraNanntokaKanntokaApiKeyTekinayatu",
+  authDomain: "exapmle.firebaseapp.com",
+  databaseURL: "https://example.firebaseio.com",
+  projectId: "myreactchatapp-hogehoge",
+  storageBucket: "myreactchatapp-hogehoge.appspot.com",
+  messagingSenderId: "XXXXXXXXXXXX",
+  appId: "1:XXXXXXXXXXXX:web:XXXXXXxXXxxxXxXXxxXxX"
+};
+```
+
+`src/firebase/index.js` の中には DB インスタンス (?) が入っています。こういうものを用意しておくと、呼び出すときに export したやつを参照すれば良いだけなので、楽で良い、とのことでやっておきました
+( ･ㅂ･)و̑ ｸﾞｯ
+
+```js:src/firebase/index.js
+import firebase from 'firebase';
+import { firebaseConfig } from './config.js';
+
+export const firebaseApp = firebase.initializeApp(firebaseConfig);
+export const firebaseDB = firebase.database();
+
+```
+
+最後に `database.rules.json` を書いて deploy すれば、この設定が反映されてめでたいことになります。
 
 
+```json:databse.rules.json
+{
+    "rules": {
+        ".read": true,
+        ".write": true
+    }
+}
+```
 
+これは project の真下に配置します。( `src/` と同じ階層 )
+
+```
+.
+├── README.md
+├── build/
+├── database.rules.json
+├── firebase.json
+├── node_modules/
+├── package-lock.json
+├── package.json
+├── public/
+└── src/
+```
+
+最終的なプロジェクト構成はこんな感じになりました。
+
+## deploy!!
+
+```
+npm run build
+firebase deploy
+```
+
+今回はここまでになります。(・ω・)ノシ
 
 
 ## Link:
@@ -267,3 +622,4 @@ firebase deploy
 
 [^1]: 一度、プロジェクト local にインストールして使おうとしたけど PATH とかが面倒でやめました。特にこだわりがなければ global に install しちゃうのがいいと思います。ちなみに、私の環境では `create-react-app` は `$HOME/.nodebrew/current/bin/create-react-app` に配置されました。
 
+[^2]: `src/index.js` をいじる方法や、他のエンドポイント (?) を作成することもできると思いますが、せっかく react-create-app で作ったので、ここでは用意されたものを使います。
