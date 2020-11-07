@@ -1,12 +1,15 @@
 import logo from './logo.svg';
 import './App.css';
 
+import { firebaseDB } from './firebase/index.js'
+
 import React, { Component } from 'react';
 
 import ChatBox from "./components/ChatBox.js"
 import Message from "./components/Message.js"
 
-let msgRepo = [ {"user_name": "anonymous", "text": "hogera"} ];
+// let msgRepo = [ {"user_name": "anonymous", "text": "hogera"} ];
+const messageRef = firebaseDB.ref('messages')
 
 class App extends Component {
   constructor(props) {
@@ -30,7 +33,7 @@ class App extends Component {
         </div>
 
         <div className="MessageList" >
-          {msgRepo.map( (m, i) => {
+          {this.state.messages.map( (m, i) => {
             return <Message key={i} message={m} />
           })}
         </div>
@@ -66,18 +69,35 @@ class App extends Component {
     } 
 
     console.log('yeah!')
-    // this.state.messages.push({
-    //   "user_name": this.state.user_name,
-    //   "text": this.state.text,
-    // })
-    // console.log(this.state.messages)
-
-    msgRepo.push({
+    this.state.messages.push({
       "user_name": this.state.user_name,
       "text": this.state.text,
     })
-    console.log(msgRepo);
+    console.log(this.state.messages)
 
+    messageRef.push({
+      "user_name": this.state.user_name,
+      "text": this.state.text,
+    })
+    console.log(messageRef);
+
+  }
+
+  // DB の更新をキャッチする Listener の実装
+  componentWillMount() {
+    messageRef.on('child_added', (snapshot) => {
+      const m = snapshot.val()
+      let msgs = this.state.messages
+
+      msgs.push({
+        'text': m.text,
+        'user_name': m.user_name,
+      })
+
+      this.setState({
+        message: msgs
+      });
+    })
   }
 }
 
