@@ -1,4 +1,4 @@
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyBCFx9S_b3fgOSJrgRvx1krkLXmfenPPmU",
   authDomain: "myreactchatapp-d413c.firebaseapp.com",
   databaseURL: "https://myreactchatapp-d413c.firebaseio.com",
