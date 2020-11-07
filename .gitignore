@@ -15,8 +15,8 @@
 /coverage
 
 # production
-/build
-/public
+build/
+public/
 
 # firebase
 /.firebase
