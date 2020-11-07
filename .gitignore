@@ -1,5 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# macOS
+.DS_Store
+
+# emacs
+*~
+
 # dependencies
 /node_modules
 /.pnp
@@ -14,6 +20,7 @@
 
 # firebase
 /.firebase
+src/firebase/config.json
 
 # misc
 .DS_Store
